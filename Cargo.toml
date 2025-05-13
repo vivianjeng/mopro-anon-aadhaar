@@ -1,0 +1,40 @@
+[package]
+name = "mopro-anon-aadhaar"
+version = "0.1.0"
+edition = "2021"
+
+# We're going to build a static library named mopro_bindings
+# This library name should not be changed
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+name = "mopro_bindings"
+
+# Adapters for different proof systems
+[features]
+default = ["mopro-ffi/circom"]
+
+[dependencies]
+mopro-wasm = { git = "https://github.com/zkmopro/mopro.git" }
+mopro-ffi = { path = "../../mopro/mopro-ffi", features = [
+    "rapidsnark",
+    "witnesscalc",
+] }
+circom-prover = { path = "../../mopro/circom-prover", features = [
+    "rapidsnark",
+    "witnesscalc",
+] }
+# rust-witness = "0.1"
+witnesscalc-adapter = "0.1.2"
+uniffi = { version = "=0.29.0" }
+num-bigint = "0.4.0"
+thiserror = "=2.0.3"
+anyhow = "1.0.74"
+# HALO2_DEPENDENCIES
+
+[build-dependencies]
+mopro-ffi = { path = "../../mopro/mopro-ffi", features = [
+    "rapidsnark",
+] }
+# rust-witness = "0.1"
+witnesscalc-adapter = "0.1.2"
+uniffi = { version = "=0.29.0", features = ["build"] }
