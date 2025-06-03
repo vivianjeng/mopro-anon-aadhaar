@@ -1,85 +1,43 @@
-# Mopro example app
+# Anon Aadhaar Mopro Bindings
 
-This is the example app of mopro. You can use the following commands to build native bindings for your iOS and/or Android app.
+It is used to generate mobile bindings for [`anon-aadhaar-react-native`](https://github.com/anon-aadhaar/anon-aadhaar-react-native)
 
-**📚 To learn more about mopro, visit: https://zkmopro.org**
-
-## Getting Started
-
-To set up and build bindings, follow these steps.
-
-### 1. Install the Mopro CLI Tool
-
-```sh
-git clone https://github.com/zkmopro/mopro
-cd mopro/cli
-cargo install --path .
-```
-
-### 1. Initialize adapter
-
-Navigate to the Mopro example app directory and initialize setup by running:
-
-```sh
-mopro init
-```
-
-### 3. Generate Native Bindings
-
-Build bindings for your project by executing:
+You can use the command to build the bindings in the local
 
 ```sh
 mopro build
 ```
 
-### 4. Create Platform-Specific Templates
+> Learn more about how to install the `mopro` command: [Getting Started](https://zkmopro.org/docs/getting-started)
 
-To generate templates tailored to your target platform, use:
+
+Then you can update the bindings in the project:
+
+**iOS**
 
 ```sh
-mopro create
+cp -r MoproiOSBindings <XCODE_PATH>
 ```
 
-[README](./react-native/README.md)
+**Android**
 
-## Advanced: Customize Builds Using Rust
+```sh
+cp -r MoproAndroidBindings/uniffi <ANDROID_PATH>/app/src/main/java && \
+cp -r MoproAndroidBindings/jniLibs <ANDROID_PATH>/app/src/main
+```
 
-For advanced usage, you can manually run Rust commands to build in either debug or release mode.
+**React Native**
 
-### iOS
+```sh
+cp -r MoproiOSBindings <REACT_NATIVE_PATH>/modules/mopro/ios && \
+cp -r MoproAndroidBindings/uniffi <REACT_NATIVE_PATH>/modules/mopro/android/src/main/java && \
+cp -r MoproAndroidBindings/jniLibs <REACT_NATIVE_PATH>/modules/mopro/android/src/main
+```
 
-- Debug Mode:
-    ```sh
-    cargo run --bin ios  # Debug mode
-    ```
-- Release Mode:
-    ```sh
-    CONFIGURATION=release cargo run --bin ios # Release mode
-    ```
+**Flutter**
 
-### Android
-
-- Debug Mode:
-    ```sh
-    cargo run --bin android  # Debug mode
-    ```
-- Release Mode:
-    ```sh
-    CONFIGURATION=release cargo run --bin android # Release mode
-    ```
-
-### Web
-
-- Debug Mode:
-    ```sh
-    cargo run --bin web  # Debug mode
-    ```
-- Release Mode:
-    ```sh
-    CONFIGURATION=release cargo run --bin web # Release mode
-    ```
-
-## Community
-
--   X account: <a href="https://twitter.com/zkmopro"><img src="https://img.shields.io/twitter/follow/zkmopro?style=flat-square&logo=x&label=zkmopro"></a>
--   Telegram group: <a href="https://t.me/zkmopro"><img src="https://img.shields.io/badge/telegram-@zkmopro-blue.svg?style=flat-square&logo=telegram"></a>
+```sh
+cp -r MoproiOSBindings <FLUTTER_PATH>/mopro_flutter_plugin/ios && \
+cp -r MoproAndroidBindings/uniffi <FLUTTER_PATH>/mopro_flutter_plugin/android/src/main/kotlin && \
+cp -r MoproAndroidBindings/jniLibs <FLUTTER_PATH>/mopro_flutter_plugin/android/src/main
+```

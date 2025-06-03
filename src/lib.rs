@@ -4,14 +4,13 @@
 mopro_ffi::app!();
 
 // --- Circom Example of setting up multiplier2 circuit ---
-use circom_prover::witness::WitnessFn;
 use anyhow::Result;
 
 // rust_witness::witness!(multiplier2);
 witnesscalc_adapter::witness!(aadhaar_verifier);
 
 mopro_ffi::set_circom_circuits! {
-    ("circuit_final.zkey", WitnessFn::WitnessCalc(aadhaar_verifier_witness))
+    ("circuit_final.zkey", mopro_ffi::witness::WitnessFn::WitnessCalc(aadhaar_verifier_witness))
 }
 
 // HALO2_TEMPLATE
