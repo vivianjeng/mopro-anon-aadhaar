@@ -764,17 +764,17 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 // when the library is loaded.
 internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
-    fun uniffi_mopro_bindings_checksum_func_from_ethereum_inputs(): Short
-
-    fun uniffi_mopro_bindings_checksum_func_from_ethereum_proof(): Short
-
     fun uniffi_mopro_bindings_checksum_func_generate_circom_proof(): Short
 
-    fun uniffi_mopro_bindings_checksum_func_to_ethereum_inputs(): Short
+    fun uniffi_mopro_bindings_checksum_func_generate_halo2_proof(): Short
 
-    fun uniffi_mopro_bindings_checksum_func_to_ethereum_proof(): Short
+    fun uniffi_mopro_bindings_checksum_func_generate_noir_proof(): Short
 
     fun uniffi_mopro_bindings_checksum_func_verify_circom_proof(): Short
+
+    fun uniffi_mopro_bindings_checksum_func_verify_halo2_proof(): Short
+
+    fun uniffi_mopro_bindings_checksum_func_verify_noir_proof(): Short
 
     fun ffi_mopro_bindings_uniffi_contract_version(): Int
 }
@@ -818,16 +818,6 @@ internal interface UniffiLib : Library {
     }
 
     // FFI functions
-    fun uniffi_mopro_bindings_fn_func_from_ethereum_inputs(
-        `inputs`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_mopro_bindings_fn_func_from_ethereum_proof(
-        `proof`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
     fun uniffi_mopro_bindings_fn_func_generate_circom_proof(
         `zkeyPath`: RustBuffer.ByValue,
         `circuitInputs`: RustBuffer.ByValue,
@@ -835,21 +825,38 @@ internal interface UniffiLib : Library {
         uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
 
-    fun uniffi_mopro_bindings_fn_func_to_ethereum_inputs(
-        `inputs`: RustBuffer.ByValue,
+    fun uniffi_mopro_bindings_fn_func_generate_halo2_proof(
+        `srsPath`: RustBuffer.ByValue,
+        `pkPath`: RustBuffer.ByValue,
+        `circuitInputs`: RustBuffer.ByValue,
         uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
 
-    fun uniffi_mopro_bindings_fn_func_to_ethereum_proof(
-        `proof`: RustBuffer.ByValue,
+    fun uniffi_mopro_bindings_fn_func_generate_noir_proof(
+        `circuitPath`: RustBuffer.ByValue,
+        `srsPath`: RustBuffer.ByValue,
+        `inputs`: RustBuffer.ByValue,
         uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
 
     fun uniffi_mopro_bindings_fn_func_verify_circom_proof(
         `zkeyPath`: RustBuffer.ByValue,
+        `proofResult`: RustBuffer.ByValue,
+        `proofLib`: RustBuffer.ByValue,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Byte
+
+    fun uniffi_mopro_bindings_fn_func_verify_halo2_proof(
+        `srsPath`: RustBuffer.ByValue,
+        `vkPath`: RustBuffer.ByValue,
         `proof`: RustBuffer.ByValue,
         `publicInput`: RustBuffer.ByValue,
-        `proofLib`: RustBuffer.ByValue,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Byte
+
+    fun uniffi_mopro_bindings_fn_func_verify_noir_proof(
+        `circuitPath`: RustBuffer.ByValue,
+        `proof`: RustBuffer.ByValue,
         uniffi_out_err: UniffiRustCallStatus,
     ): Byte
 
@@ -1082,22 +1089,22 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
-    if (lib.uniffi_mopro_bindings_checksum_func_from_ethereum_inputs() != 44693.toShort()) {
+    if (lib.uniffi_mopro_bindings_checksum_func_generate_circom_proof() != 1382.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_mopro_bindings_checksum_func_from_ethereum_proof() != 10.toShort()) {
+    if (lib.uniffi_mopro_bindings_checksum_func_generate_halo2_proof() != 28088.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_mopro_bindings_checksum_func_generate_circom_proof() != 57032.toShort()) {
+    if (lib.uniffi_mopro_bindings_checksum_func_generate_noir_proof() != 8268.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_mopro_bindings_checksum_func_to_ethereum_inputs() != 10288.toShort()) {
+    if (lib.uniffi_mopro_bindings_checksum_func_verify_circom_proof() != 14151.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_mopro_bindings_checksum_func_to_ethereum_proof() != 23344.toShort()) {
+    if (lib.uniffi_mopro_bindings_checksum_func_verify_halo2_proof() != 24562.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_mopro_bindings_checksum_func_verify_circom_proof() != 51239.toShort()) {
+    if (lib.uniffi_mopro_bindings_checksum_func_verify_noir_proof() != 57242.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -1257,9 +1264,86 @@ public object FfiConverterByteArray : FfiConverterRustBuffer<ByteArray> {
     }
 }
 
+data class CircomProof(
+    var `a`: G1,
+    var `b`: G2,
+    var `c`: G1,
+    var `protocol`: kotlin.String,
+    var `curve`: kotlin.String,
+) {
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCircomProof : FfiConverterRustBuffer<CircomProof> {
+    override fun read(buf: ByteBuffer): CircomProof =
+        CircomProof(
+            FfiConverterTypeG1.read(buf),
+            FfiConverterTypeG2.read(buf),
+            FfiConverterTypeG1.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+
+    override fun allocationSize(value: CircomProof) =
+        (
+            FfiConverterTypeG1.allocationSize(value.`a`) +
+                FfiConverterTypeG2.allocationSize(value.`b`) +
+                FfiConverterTypeG1.allocationSize(value.`c`) +
+                FfiConverterString.allocationSize(value.`protocol`) +
+                FfiConverterString.allocationSize(value.`curve`)
+        )
+
+    override fun write(
+        value: CircomProof,
+        buf: ByteBuffer,
+    ) {
+        FfiConverterTypeG1.write(value.`a`, buf)
+        FfiConverterTypeG2.write(value.`b`, buf)
+        FfiConverterTypeG1.write(value.`c`, buf)
+        FfiConverterString.write(value.`protocol`, buf)
+        FfiConverterString.write(value.`curve`, buf)
+    }
+}
+
+data class CircomProofResult(
+    var `proof`: CircomProof,
+    var `inputs`: List<kotlin.String>,
+) {
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCircomProofResult : FfiConverterRustBuffer<CircomProofResult> {
+    override fun read(buf: ByteBuffer): CircomProofResult =
+        CircomProofResult(
+            FfiConverterTypeCircomProof.read(buf),
+            FfiConverterSequenceString.read(buf),
+        )
+
+    override fun allocationSize(value: CircomProofResult) =
+        (
+            FfiConverterTypeCircomProof.allocationSize(value.`proof`) +
+                FfiConverterSequenceString.allocationSize(value.`inputs`)
+        )
+
+    override fun write(
+        value: CircomProofResult,
+        buf: ByteBuffer,
+    ) {
+        FfiConverterTypeCircomProof.write(value.`proof`, buf)
+        FfiConverterSequenceString.write(value.`inputs`, buf)
+    }
+}
+
 data class G1(
     var `x`: kotlin.String,
     var `y`: kotlin.String,
+    var `z`: kotlin.String,
 ) {
     companion object
 }
@@ -1272,12 +1356,14 @@ public object FfiConverterTypeG1 : FfiConverterRustBuffer<G1> {
         G1(
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
         )
 
     override fun allocationSize(value: G1) =
         (
             FfiConverterString.allocationSize(value.`x`) +
-                FfiConverterString.allocationSize(value.`y`)
+                FfiConverterString.allocationSize(value.`y`) +
+                FfiConverterString.allocationSize(value.`z`)
         )
 
     override fun write(
@@ -1286,12 +1372,14 @@ public object FfiConverterTypeG1 : FfiConverterRustBuffer<G1> {
     ) {
         FfiConverterString.write(value.`x`, buf)
         FfiConverterString.write(value.`y`, buf)
+        FfiConverterString.write(value.`z`, buf)
     }
 }
 
 data class G2(
     var `x`: List<kotlin.String>,
     var `y`: List<kotlin.String>,
+    var `z`: List<kotlin.String>,
 ) {
     companion object
 }
@@ -1304,12 +1392,14 @@ public object FfiConverterTypeG2 : FfiConverterRustBuffer<G2> {
         G2(
             FfiConverterSequenceString.read(buf),
             FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceString.read(buf),
         )
 
     override fun allocationSize(value: G2) =
         (
             FfiConverterSequenceString.allocationSize(value.`x`) +
-                FfiConverterSequenceString.allocationSize(value.`y`)
+                FfiConverterSequenceString.allocationSize(value.`y`) +
+                FfiConverterSequenceString.allocationSize(value.`z`)
         )
 
     override fun write(
@@ -1318,10 +1408,11 @@ public object FfiConverterTypeG2 : FfiConverterRustBuffer<G2> {
     ) {
         FfiConverterSequenceString.write(value.`x`, buf)
         FfiConverterSequenceString.write(value.`y`, buf)
+        FfiConverterSequenceString.write(value.`z`, buf)
     }
 }
 
-data class GenerateProofResult(
+data class Halo2ProofResult(
     var `proof`: kotlin.ByteArray,
     var `inputs`: kotlin.ByteArray,
 ) {
@@ -1331,61 +1422,25 @@ data class GenerateProofResult(
 /**
  * @suppress
  */
-public object FfiConverterTypeGenerateProofResult : FfiConverterRustBuffer<GenerateProofResult> {
-    override fun read(buf: ByteBuffer): GenerateProofResult =
-        GenerateProofResult(
+public object FfiConverterTypeHalo2ProofResult : FfiConverterRustBuffer<Halo2ProofResult> {
+    override fun read(buf: ByteBuffer): Halo2ProofResult =
+        Halo2ProofResult(
             FfiConverterByteArray.read(buf),
             FfiConverterByteArray.read(buf),
         )
 
-    override fun allocationSize(value: GenerateProofResult) =
+    override fun allocationSize(value: Halo2ProofResult) =
         (
             FfiConverterByteArray.allocationSize(value.`proof`) +
                 FfiConverterByteArray.allocationSize(value.`inputs`)
         )
 
     override fun write(
-        value: GenerateProofResult,
+        value: Halo2ProofResult,
         buf: ByteBuffer,
     ) {
         FfiConverterByteArray.write(value.`proof`, buf)
         FfiConverterByteArray.write(value.`inputs`, buf)
-    }
-}
-
-data class ProofCalldata(
-    var `a`: G1,
-    var `b`: G2,
-    var `c`: G1,
-) {
-    companion object
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeProofCalldata : FfiConverterRustBuffer<ProofCalldata> {
-    override fun read(buf: ByteBuffer): ProofCalldata =
-        ProofCalldata(
-            FfiConverterTypeG1.read(buf),
-            FfiConverterTypeG2.read(buf),
-            FfiConverterTypeG1.read(buf),
-        )
-
-    override fun allocationSize(value: ProofCalldata) =
-        (
-            FfiConverterTypeG1.allocationSize(value.`a`) +
-                FfiConverterTypeG2.allocationSize(value.`b`) +
-                FfiConverterTypeG1.allocationSize(value.`c`)
-        )
-
-    override fun write(
-        value: ProofCalldata,
-        buf: ByteBuffer,
-    ) {
-        FfiConverterTypeG1.write(value.`a`, buf)
-        FfiConverterTypeG2.write(value.`b`, buf)
-        FfiConverterTypeG1.write(value.`c`, buf)
     }
 }
 
@@ -1398,6 +1453,13 @@ sealed class MoproException : kotlin.Exception() {
     }
 
     class Halo2Exception(
+        val v1: kotlin.String,
+    ) : MoproException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+
+    class NoirException(
         val v1: kotlin.String,
     ) : MoproException() {
         override val message
@@ -1423,6 +1485,10 @@ public object FfiConverterTypeMoproError : FfiConverterRustBuffer<MoproException
                 MoproException.Halo2Exception(
                     FfiConverterString.read(buf),
                 )
+            3 ->
+                MoproException.NoirException(
+                    FfiConverterString.read(buf),
+                )
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
 
@@ -1434,6 +1500,11 @@ public object FfiConverterTypeMoproError : FfiConverterRustBuffer<MoproException
                     FfiConverterString.allocationSize(value.v1)
             )
             is MoproException.Halo2Exception -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL +
+                    FfiConverterString.allocationSize(value.v1)
+            )
+            is MoproException.NoirException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL +
                     FfiConverterString.allocationSize(value.v1)
@@ -1452,6 +1523,11 @@ public object FfiConverterTypeMoproError : FfiConverterRustBuffer<MoproException
             }
             is MoproException.Halo2Exception -> {
                 buf.putInt(2)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+            is MoproException.NoirException -> {
+                buf.putInt(3)
                 FfiConverterString.write(value.v1, buf)
                 Unit
             }
@@ -1491,6 +1567,38 @@ public object FfiConverterTypeProofLib : FfiConverterRustBuffer<ProofLib> {
 /**
  * @suppress
  */
+public object FfiConverterOptionalString : FfiConverterRustBuffer<kotlin.String?> {
+    override fun read(buf: ByteBuffer): kotlin.String? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterString.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.String?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterString.allocationSize(value)
+        }
+    }
+
+    override fun write(
+        value: kotlin.String?,
+        buf: ByteBuffer,
+    ) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterString.write(value, buf)
+        }
+    }
+}
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.String>> {
     override fun read(buf: ByteBuffer): List<kotlin.String> {
         val len = buf.getInt()
@@ -1516,33 +1624,54 @@ public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.St
     }
 }
 
-fun `fromEthereumInputs`(`inputs`: List<kotlin.String>): kotlin.ByteArray =
-    FfiConverterByteArray.lift(
-        uniffiRustCall { _status ->
-            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_from_ethereum_inputs(
-                FfiConverterSequenceString.lower(`inputs`),
-                _status,
-            )
-        },
-    )
+/**
+ * @suppress
+ */
+public object FfiConverterMapStringSequenceString : FfiConverterRustBuffer<Map<kotlin.String, List<kotlin.String>>> {
+    override fun read(buf: ByteBuffer): Map<kotlin.String, List<kotlin.String>> {
+        val len = buf.getInt()
+        return buildMap<kotlin.String, List<kotlin.String>>(len) {
+            repeat(len) {
+                val k = FfiConverterString.read(buf)
+                val v = FfiConverterSequenceString.read(buf)
+                this[k] = v
+            }
+        }
+    }
 
-fun `fromEthereumProof`(`proof`: ProofCalldata): kotlin.ByteArray =
-    FfiConverterByteArray.lift(
-        uniffiRustCall { _status ->
-            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_from_ethereum_proof(
-                FfiConverterTypeProofCalldata.lower(`proof`),
-                _status,
-            )
-        },
-    )
+    override fun allocationSize(value: Map<kotlin.String, List<kotlin.String>>): ULong {
+        val spaceForMapSize = 4UL
+        val spaceForChildren =
+            value
+                .map { (k, v) ->
+                    FfiConverterString.allocationSize(k) +
+                        FfiConverterSequenceString.allocationSize(v)
+                }.sum()
+        return spaceForMapSize + spaceForChildren
+    }
+
+    override fun write(
+        value: Map<kotlin.String, List<kotlin.String>>,
+        buf: ByteBuffer,
+    ) {
+        buf.putInt(value.size)
+        // The parens on `(k, v)` here ensure we're calling the right method,
+        // which is important for compatibility with older android devices.
+        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+        value.forEach { (k, v) ->
+            FfiConverterString.write(k, buf)
+            FfiConverterSequenceString.write(v, buf)
+        }
+    }
+}
 
 @Throws(MoproException::class)
 fun `generateCircomProof`(
     `zkeyPath`: kotlin.String,
     `circuitInputs`: kotlin.String,
     `proofLib`: ProofLib,
-): GenerateProofResult =
-    FfiConverterTypeGenerateProofResult.lift(
+): CircomProofResult =
+    FfiConverterTypeCircomProofResult.lift(
         uniffiRustCallWithError(MoproException) { _status ->
             UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_generate_circom_proof(
                 FfiConverterString.lower(`zkeyPath`),
@@ -1553,21 +1682,35 @@ fun `generateCircomProof`(
         },
     )
 
-fun `toEthereumInputs`(`inputs`: kotlin.ByteArray): List<kotlin.String> =
-    FfiConverterSequenceString.lift(
-        uniffiRustCall { _status ->
-            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_to_ethereum_inputs(
-                FfiConverterByteArray.lower(`inputs`),
+@Throws(MoproException::class)
+fun `generateHalo2Proof`(
+    `srsPath`: kotlin.String,
+    `pkPath`: kotlin.String,
+    `circuitInputs`: Map<kotlin.String, List<kotlin.String>>,
+): Halo2ProofResult =
+    FfiConverterTypeHalo2ProofResult.lift(
+        uniffiRustCallWithError(MoproException) { _status ->
+            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_generate_halo2_proof(
+                FfiConverterString.lower(`srsPath`),
+                FfiConverterString.lower(`pkPath`),
+                FfiConverterMapStringSequenceString.lower(`circuitInputs`),
                 _status,
             )
         },
     )
 
-fun `toEthereumProof`(`proof`: kotlin.ByteArray): ProofCalldata =
-    FfiConverterTypeProofCalldata.lift(
-        uniffiRustCall { _status ->
-            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_to_ethereum_proof(
-                FfiConverterByteArray.lower(`proof`),
+@Throws(MoproException::class)
+fun `generateNoirProof`(
+    `circuitPath`: kotlin.String,
+    `srsPath`: kotlin.String?,
+    `inputs`: List<kotlin.String>,
+): kotlin.ByteArray =
+    FfiConverterByteArray.lift(
+        uniffiRustCallWithError(MoproException) { _status ->
+            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_generate_noir_proof(
+                FfiConverterString.lower(`circuitPath`),
+                FfiConverterOptionalString.lower(`srsPath`),
+                FfiConverterSequenceString.lower(`inputs`),
                 _status,
             )
         },
@@ -1576,17 +1719,49 @@ fun `toEthereumProof`(`proof`: kotlin.ByteArray): ProofCalldata =
 @Throws(MoproException::class)
 fun `verifyCircomProof`(
     `zkeyPath`: kotlin.String,
-    `proof`: kotlin.ByteArray,
-    `publicInput`: kotlin.ByteArray,
+    `proofResult`: CircomProofResult,
     `proofLib`: ProofLib,
 ): kotlin.Boolean =
     FfiConverterBoolean.lift(
         uniffiRustCallWithError(MoproException) { _status ->
             UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_verify_circom_proof(
                 FfiConverterString.lower(`zkeyPath`),
+                FfiConverterTypeCircomProofResult.lower(`proofResult`),
+                FfiConverterTypeProofLib.lower(`proofLib`),
+                _status,
+            )
+        },
+    )
+
+@Throws(MoproException::class)
+fun `verifyHalo2Proof`(
+    `srsPath`: kotlin.String,
+    `vkPath`: kotlin.String,
+    `proof`: kotlin.ByteArray,
+    `publicInput`: kotlin.ByteArray,
+): kotlin.Boolean =
+    FfiConverterBoolean.lift(
+        uniffiRustCallWithError(MoproException) { _status ->
+            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_verify_halo2_proof(
+                FfiConverterString.lower(`srsPath`),
+                FfiConverterString.lower(`vkPath`),
                 FfiConverterByteArray.lower(`proof`),
                 FfiConverterByteArray.lower(`publicInput`),
-                FfiConverterTypeProofLib.lower(`proofLib`),
+                _status,
+            )
+        },
+    )
+
+@Throws(MoproException::class)
+fun `verifyNoirProof`(
+    `circuitPath`: kotlin.String,
+    `proof`: kotlin.ByteArray,
+): kotlin.Boolean =
+    FfiConverterBoolean.lift(
+        uniffiRustCallWithError(MoproException) { _status ->
+            UniffiLib.INSTANCE.uniffi_mopro_bindings_fn_func_verify_noir_proof(
+                FfiConverterString.lower(`circuitPath`),
+                FfiConverterByteArray.lower(`proof`),
                 _status,
             )
         },
