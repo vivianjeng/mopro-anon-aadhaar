@@ -19,6 +19,12 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
+            - name: Install Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: 1.81.0
+                  override: true
+
             - name: Build iOS bindings
               run: |
                   CONFIGURATION=release cargo run --bin ios IOS_ARCHS=aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
