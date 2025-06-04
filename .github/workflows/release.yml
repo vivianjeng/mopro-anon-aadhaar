@@ -19,6 +19,9 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
+            - name: install dependencies
+              run: brew install nasm
+
             - name: Install Rust
               uses: actions-rs/toolchain@v1
               with:
